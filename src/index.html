@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="pt-BR" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <title>Awesome Capacitor App</title>
+    <title>Notas Rápidas</title>
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -10,23 +10,80 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
 
-    <script
-      type="module"
-      src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.esm.js"
+    <!-- Ionic Core -->
+    <script 
+      type="module" 
+      src="https://cdn.jsdelivr.net/npm/@ionic/core@8/dist/ionic/ionic.esm.js"
     ></script>
-    <script
-      nomodule
-      src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.js"
+    <script 
+      nomodule 
+      src="https://cdn.jsdelivr.net/npm/@ionic/core@8/dist/ionic/ionic.js"
+    ></script>
+    <link 
+      rel="stylesheet" 
+      href="https://cdn.jsdelivr.net/npm/@ionic/core@8/css/ionic.bundle.css"
+    />
+
+    <!-- Ionicons -->
+    <script 
+      type="module" 
+      src="https://cdn.jsdelivr.net/npm/ionicons@7/dist/ionicons/ionicons.esm.js"
     ></script>
 
+    <!-- App styles -->
     <link rel="icon" type="image/x-icon" href="./assets/icon/favicon.ico" />
     <link rel="manifest" href="./manifest.json" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <meta name="theme-color" content="#31d53d" />
+    <link rel="stylesheet" href="./css/variables.css" />
+    <link rel="stylesheet" href="./css/app.css" />
+    <meta name="theme-color" content="#3880ff" />
   </head>
   <body>
-    <capacitor-welcome></capacitor-welcome>
+    <app-notes>
+      <app-header>
+        <h1>📝 Notas Rápidas</h1>
+        <ion-button color="primary" id="add-note-btn">
+          <ion-icon name="add"></ion-icon>
+        </ion-button>
+      </app-header>
 
-    <script src="./js/capacitor-welcome.js" type="module"></script>
+      <main>
+        <note-form id="note-form" style="display: none;">
+          <div class="form-group">
+            <label for="note-title">Título</label>
+            <input type="text" id="note-title" placeholder="Digite um título..." />
+          </div>
+          <div class="form-group">
+            <label for="note-content">Conteúdo</label>
+            <textarea id="note-content" placeholder="Digite sua nota..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="save-note-btn">
+              <ion-icon name="save"></ion-icon>
+              Salvar Nota
+            </button>
+            <button class="btn btn-secondary" id="cancel-note-btn">
+              <ion-icon name="close"></ion-icon>
+              Cancelar
+            </button>
+          </div>
+        </note-form>
+
+        <note-list id="note-list">
+          <div class="empty-state">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <h3>Nenhuma nota ainda</h3>
+            <p>Clique no botão + para criar sua primeira nota</p>
+          </div>
+        </note-list>
+      </main>
+    </app-notes>
+
+    <!-- App scripts -->
+    <script src="./js/services/storage.js" type="module"></script>
+    <script src="./js/services/geolocation.js" type="module"></script>
+    <script src="./js/components/NoteForm.js" type="module"></script>
+    <script src="./js/components/NoteList.js" type="module"></script>
+    <script src="./js/components/NoteItem.js" type="module"></script>
+    <script src="./js/app.js" type="module"></script>
   </body>
 </html>

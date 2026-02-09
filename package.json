@@ -16,7 +16,11 @@
     "@capacitor/core": "latest",
     "@capacitor/camera": "latest",
     "@capacitor/splash-screen": "latest",
-    "@capacitor/android": "latest"
+    "@capacitor/android": "latest",
+    "@capacitor/geolocation": "latest",
+    "@ionic/core": "^8.0.0",
+    "@ionic/react": "^8.0.0",
+    "ionicons": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "latest",
