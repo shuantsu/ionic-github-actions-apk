@@ -784,7 +784,7 @@ function f(t = false) {
   typeof window > "u" || (window.CapacitorUtils = window.CapacitorUtils || {}, window.Capacitor !== void 0 && !t ? s(window) : window.cordova !== void 0 && u(window));
 }
 const Geolocation = registerPlugin("Geolocation", {
-  web: () => __vitePreload(() => import("./web-g4p8MN3q.js"), true ? [] : void 0, import.meta.url).then((m) => new m.GeolocationWeb())
+  web: () => __vitePreload(() => import("./web-CpBtsCtQ.js"), true ? [] : void 0, import.meta.url).then((m) => new m.GeolocationWeb())
 });
 f();
 class GeolocationService {
@@ -1649,19 +1649,20 @@ class NoteList extends HTMLElement {
         {
           text: "Cancelar",
           role: "cancel",
-          handler: () => resolve(false)
+          handler: () => {
+            resolve(false);
+          }
         },
         {
           text: "Excluir Tudo",
           role: "destructive",
-          handler: () => resolve(true)
+          handler: () => {
+            resolve(true);
+          }
         }
       ];
       document.body.appendChild(alert);
-      alert.present();
-      setTimeout(() => {
-        document.body.removeChild(alert);
-      }, 100);
+      return alert.present();
     });
   }
   showToast(message, color = "primary") {
@@ -2084,7 +2085,7 @@ class NoteItem extends HTMLElement {
 }
 customElements.define("note-item", NoteItem);
 const SplashScreen = registerPlugin("SplashScreen", {
-  web: () => __vitePreload(() => import("./web-BPE5gK6p.js"), true ? [] : void 0, import.meta.url).then((m) => new m.SplashScreenWeb())
+  web: () => __vitePreload(() => import("./web-Cos1nN9e.js"), true ? [] : void 0, import.meta.url).then((m) => new m.SplashScreenWeb())
 });
 class NotesApp {
   constructor() {
