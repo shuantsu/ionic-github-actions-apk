@@ -1,7 +1,7 @@
-name: Build Android APK
+name: Build Android APK and Deploy to GitHub Pages
 
 on:
-  workflow_dispatch:  # Apenas disparar manualmente
+  workflow_dispatch:
     inputs:
       build_reason:
         description: 'Motivo do build'
@@ -9,43 +9,59 @@ on:
         default: 'Build manual'
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          
+          cache: 'npm' # Cache nativo para node_modules
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-          
+          cache: 'gradle' # Cache nativo para dependências do Gradle
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        
+
       - name: Install dependencies
-        run: npm install
-        
-      - name: Add Android platform
+        run: npm ci
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Capacitor Sync
         run: |
-          npx cap add android
-        
-      - name: Build and sync
-        run: |
-          npm run build
+          # Se a pasta android não existir, ele adiciona. Se existir, ele apenas sincroniza.
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
           npx cap sync android
-          
+
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug
-        
-      - name: Upload APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
