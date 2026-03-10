@@ -162,26 +162,34 @@ class StorageService {
 }
 const storage = new StorageService();
 const scriptRel = "modulepreload";
-const assetsURL = function(dep) {
-  return "/" + dep;
+const assetsURL = function(dep, importerUrl) {
+  return new URL(dep, importerUrl).href;
 };
 const seen = {};
 const __vitePreload = function preload(baseModule, deps, importerUrl) {
   let promise = Promise.resolve();
   if (deps && deps.length > 0) {
-    document.getElementsByTagName("link");
+    const links = document.getElementsByTagName("link");
     const cspNonceMeta = document.querySelector(
       "meta[property=csp-nonce]"
     );
     const cspNonce = (cspNonceMeta == null ? void 0 : cspNonceMeta.nonce) || (cspNonceMeta == null ? void 0 : cspNonceMeta.getAttribute("nonce"));
     promise = Promise.allSettled(
       deps.map((dep) => {
-        dep = assetsURL(dep);
+        dep = assetsURL(dep, importerUrl);
         if (dep in seen) return;
         seen[dep] = true;
         const isCss = dep.endsWith(".css");
         const cssSelector = isCss ? '[rel="stylesheet"]' : "";
-        if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
+        const isBaseRelative = !!importerUrl;
+        if (isBaseRelative) {
+          for (let i = links.length - 1; i >= 0; i--) {
+            const link2 = links[i];
+            if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
+              return;
+            }
+          }
+        } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
           return;
         }
         const link = document.createElement("link");
@@ -776,7 +784,7 @@ function f(t = false) {
   typeof window > "u" || (window.CapacitorUtils = window.CapacitorUtils || {}, window.Capacitor !== void 0 && !t ? s(window) : window.cordova !== void 0 && u(window));
 }
 const Geolocation = registerPlugin("Geolocation", {
-  web: () => __vitePreload(() => import("./web-DaKc_bc5.js"), true ? [] : void 0).then((m) => new m.GeolocationWeb())
+  web: () => __vitePreload(() => import("./web-g4p8MN3q.js"), true ? [] : void 0, import.meta.url).then((m) => new m.GeolocationWeb())
 });
 f();
 class GeolocationService {
@@ -2076,7 +2084,7 @@ class NoteItem extends HTMLElement {
 }
 customElements.define("note-item", NoteItem);
 const SplashScreen = registerPlugin("SplashScreen", {
-  web: () => __vitePreload(() => import("./web-jdGRvwfF.js"), true ? [] : void 0).then((m) => new m.SplashScreenWeb())
+  web: () => __vitePreload(() => import("./web-BPE5gK6p.js"), true ? [] : void 0, import.meta.url).then((m) => new m.SplashScreenWeb())
 });
 class NotesApp {
   constructor() {
