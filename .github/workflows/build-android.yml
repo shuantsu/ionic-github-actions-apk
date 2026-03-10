@@ -1,4 +1,4 @@
-name: Build Android APK and Deploy Pages (Ultra Optimized)
+name: Build Android APK and Deploy Pages (Stable)
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Necessário para Releases e GitHub Pages
+      contents: write
     
     steps:
       - name: Checkout
@@ -24,65 +24,34 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Setup Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle' # Voltando para o cache nativo que é mais estável
 
-      # Substituindo a action pesada pelo método manual "anti-bloatware"
-      - name: Install Android CLI Tools (Minimal)
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
-          rm cmdline-tools.zip
-          
-      - name: Install SDK Components (Sem Emulador/Lixo)
-        run: |
-          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-          yes | sdkmanager --licenses > /dev/null
-          # Instalamos APENAS o necessário para compilar
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            android/.gradle
-          key: ${{ runner.os }}-gradle-ultra-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties', 'package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-ultra-
-
-      - name: Install JS Deps
+      - name: Install dependencies
         run: npm ci
 
       - name: Build Web App
         run: |
           npm run build
-          # Impede que o GitHub Pages ignore arquivos com underscore ou assets do Vite
-          touch dist/.nojekyll 
+          touch dist/.nojekyll
 
       - name: Capacitor Sync
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
+          npx cap add android || true # Se já existir, ele ignora o erro
           npx cap sync android
 
-      - name: Build APK (Incremental)
+      - name: Build APK
         working-directory: android
         run: |
-          # Garante que o executável existe antes do chmod
-          if [ ! -f "gradlew" ]; then
-            echo "Gradlew não encontrado, gerando..."
-            gradle wrapper
-          fi
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --parallel --build-cache
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
@@ -90,16 +59,12 @@ jobs:
           name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Create Release and Upload APK
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: "Latest Android Build"
-          body: |
-            Build gerado automaticamente.
-            Motivo: ${{ github.event.inputs.build_reason }}
+          name: "Latest Build"
           files: android/app/build/outputs/apk/debug/app-debug.apk
-          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
