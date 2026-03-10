@@ -22,14 +22,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm' # Cache nativo para node_modules
+          cache: 'npm'
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle' # Cache nativo para dependências do Gradle
+          # Removi o 'cache: gradle' daqui para evitar o erro de arquivo não encontrado
+          # Vamos configurar o cache manualmente apontando para a pasta correta abaixo
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -42,11 +43,21 @@ jobs:
 
       - name: Capacitor Sync
         run: |
-          # Se a pasta android não existir, ele adiciona. Se existir, ele apenas sincroniza.
           if [ ! -d "android" ]; then
             npx cap add android
           fi
           npx cap sync android
+
+      # Novo passo de Cache específico para projetos onde o Gradle não está na raiz
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build APK
         working-directory: android
