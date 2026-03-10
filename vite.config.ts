@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: './',
   root: './src',
   server: {
-    host: '0.0.0.0', // Permite acesso externo
-    port: 5173       // Porta padrão do Vite
+    host: '0.0.0.0', 
+    port: 5173       
   },
   build: {
     outDir: '../dist',
