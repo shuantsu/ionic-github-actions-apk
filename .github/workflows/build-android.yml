@@ -1,4 +1,4 @@
-name: Build Android APK and Deploy Pages (Stable)
+name: Build Android APK and Deploy Pages (Final Optimized)
 
 on:
   workflow_dispatch:
@@ -29,12 +29,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          # Removido o 'cache: gradle' daqui para não quebrar se a pasta /android não existir
+
+      # ESTE PASSO SUBSTITUI O CACHE MANUAL E MATA O DOWNLOAD DO GRADLE
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+          # Ele intercepta o wrapper do Capacitor e usa o cache do GitHub
+          cache-disabled: false
+          generate-job-summary: true
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
+      - name: Install JS Deps
         run: npm ci
 
       - name: Build Web App
@@ -44,7 +52,6 @@ jobs:
 
       - name: Capacitor Sync
         run: |
-          # Adiciona a plataforma se não existir, senão apenas sincroniza
           if [ ! -d "android" ]; then
             npx cap add android
           fi
@@ -53,14 +60,12 @@ jobs:
       - name: Build APK
         working-directory: android
         run: |
+          # Garante que o wrapper existe antes de rodar
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper
+          fi
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-
-      - name: Upload APK as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug.apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          ./gradlew assembleDebug --no-daemon --parallel --build-cache
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
