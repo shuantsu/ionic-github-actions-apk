@@ -29,7 +29,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle' # Voltando para o cache nativo que é mais estável
+          # Removido o 'cache: gradle' daqui para não quebrar se a pasta /android não existir
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -44,7 +44,10 @@ jobs:
 
       - name: Capacitor Sync
         run: |
-          npx cap add android || true # Se já existir, ele ignora o erro
+          # Adiciona a plataforma se não existir, senão apenas sincroniza
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
           npx cap sync android
 
       - name: Build APK
@@ -61,10 +64,12 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
+        if: success()
         with:
           tag_name: latest
           name: "Latest Build"
           files: android/app/build/outputs/apk/debug/app-debug.apk
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
