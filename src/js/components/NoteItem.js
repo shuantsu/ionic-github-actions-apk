@@ -1,4 +1,4 @@
-// NoteItem Component - Exibe uma nota individual
+// NoteItem Component - Exibe uma nota individual corrigido
 
 import { storage } from '../services/storage.js';
 import { geolocation } from '../services/geolocation.js';
@@ -153,17 +153,6 @@ class NoteItem extends HTMLElement {
           background: var(--ion-color-light);
         }
 
-        .location-badge {
-          background: var(--ion-color-light);
-          color: var(--ion-text-color);
-          padding: 0.25rem 0.5rem;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
         @media (max-width: 768px) {
           .note-header {
             flex-direction: column;
@@ -230,7 +219,7 @@ class NoteItem extends HTMLElement {
               <ion-icon name="time-outline"></ion-icon>
               <span class="created-date"></span>
             </div>
-            <div class="note-date" style="display: none;">
+            <div class="note-date" id="updated-container" style="display: none;">
               <ion-icon name="refresh-outline"></ion-icon>
               <span class="updated-date"></span>
             </div>
@@ -275,52 +264,41 @@ class NoteItem extends HTMLElement {
     const locationEl = this.shadowRoot.querySelector('.note-location');
     const locationTextEl = this.shadowRoot.querySelector('.location-text');
 
-    // Título
     titleEl.textContent = this.note.title;
-
-    // Conteúdo
     contentEl.textContent = this.note.content;
     
-    // Adicionar botão expandir se conteúdo for muito longo
-    if (this.note.content.length > 200) {
-      if (!contentEl.querySelector('.expand-btn')) {
+    if (this.note.content.length > 200 && !this.shadowRoot.querySelector('.expand-btn')) {
         const expandBtn = document.createElement('button');
         expandBtn.className = 'expand-btn';
         expandBtn.textContent = 'Ver mais';
         expandBtn.addEventListener('click', () => this.toggleContent());
         contentEl.parentNode.insertBefore(expandBtn, contentEl.nextSibling);
-      }
     }
 
-    // Datas
     createdDateEl.textContent = this.formatDate(this.note.createdAt);
     
     if (this.note.updatedAt && this.note.updatedAt !== this.note.createdAt) {
-      const updatedDateContainer = this.shadowRoot.querySelector('.note-date:nth-child(2)');
+      const updatedDateContainer = this.shadowRoot.getElementById('updated-container');
       updatedDateContainer.style.display = 'flex';
       updatedDateEl.textContent = this.formatDate(this.note.updatedAt);
     }
 
-    // Localização
     if (this.note.location) {
       locationEl.style.display = 'flex';
       locationTextEl.textContent = geolocation.formatLocation(this.note.location);
     }
 
-    // Adicionar ID ao card para referência
     card.dataset.noteId = this.note.id;
   }
 
   toggleContent() {
     const contentEl = this.shadowRoot.querySelector('.note-content');
     const expandBtn = this.shadowRoot.querySelector('.expand-btn');
-    
     contentEl.classList.toggle('expanded');
     expandBtn.textContent = contentEl.classList.contains('expanded') ? 'Ver menos' : 'Ver mais';
   }
 
   editNote() {
-    // Disparar evento para o formulário editar
     this.dispatchEvent(new CustomEvent('edit-note', {
       detail: { note: this.note }
     }));
@@ -330,19 +308,16 @@ class NoteItem extends HTMLElement {
     const card = this.shadowRoot.querySelector('.note-card');
     card.classList.add('deleting');
 
-    // Confirmar exclusão
     const confirmed = await this.confirmDelete();
     
     if (confirmed) {
       try {
         storage.deleteNote(this.note.id);
         
-        // Disparar evento para atualizar lista
         this.dispatchEvent(new CustomEvent('note-deleted', {
           detail: { noteId: this.note.id }
         }));
 
-        // Animar remoção
         card.style.opacity = '0';
         card.style.transform = 'translateX(-100%)';
         
@@ -378,10 +353,7 @@ class NoteItem extends HTMLElement {
 
       document.body.appendChild(alert);
       alert.present();
-      
-      setTimeout(() => {
-        document.body.removeChild(alert);
-      }, 100);
+      // O Ionic gerencia a remoção do DOM automaticamente ao fechar
     });
   }
 
@@ -403,10 +375,6 @@ class NoteItem extends HTMLElement {
 
     document.body.appendChild(alert);
     alert.present();
-    
-    setTimeout(() => {
-      document.body.removeChild(alert);
-    }, 100);
   }
 
   getLocationSource(source) {
@@ -447,12 +415,7 @@ class NoteItem extends HTMLElement {
 
     document.body.appendChild(toast);
     toast.present();
-    
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 2500);
   }
 }
 
-// Registrar custom element
 customElements.define('note-item', NoteItem);
