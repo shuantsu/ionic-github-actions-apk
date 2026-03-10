@@ -12,7 +12,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Essencial para criar o Release e o Pages
     
     steps:
       - name: Checkout
@@ -29,8 +29,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          # Removi o 'cache: gradle' daqui para evitar o erro de arquivo não encontrado
-          # Vamos configurar o cache manualmente apontando para a pasta correta abaixo
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -39,7 +37,9 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        run: npm run build
+        run: |
+          npm run build
+          touch dist/.nojekyll
 
       - name: Capacitor Sync
         run: |
@@ -48,7 +48,6 @@ jobs:
           fi
           npx cap sync android
 
-      # Novo passo de Cache específico para projetos onde o Gradle não está na raiz
       - name: Cache Gradle Dependencies
         uses: actions/cache@v4
         with:
@@ -65,12 +64,28 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
+      # 1. Mantemos o upload como artefato (segurança extra)
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
+      # 2. Publicamos o APK na seção de RELEASES do GitHub
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Android Build"
+          body: |
+            Build gerado automaticamente via GitHub Actions.
+            Motivo: ${{ github.event.inputs.build_reason }}
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Deploy Web
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
