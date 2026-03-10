@@ -415,25 +415,26 @@ class NoteList extends HTMLElement {
       const alert = document.createElement('ion-alert');
       alert.header = '⚠️ Confirmar Limpeza';
       alert.message = `Tem certeza que deseja excluir todas as ${this.notes.length} notas? Esta ação não pode ser desfeita.`;
+      
       alert.buttons = [
         {
           text: 'Cancelar',
           role: 'cancel',
-          handler: () => resolve(false)
+          handler: () => {
+            resolve(false);
+          }
         },
         {
           text: 'Excluir Tudo',
           role: 'destructive',
-          handler: () => resolve(true)
+          handler: () => {
+            resolve(true);
+          }
         }
       ];
 
       document.body.appendChild(alert);
-      alert.present();
-      
-      setTimeout(() => {
-        document.body.removeChild(alert);
-      }, 100);
+      return alert.present();
     });
   }
 
