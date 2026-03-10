@@ -784,7 +784,7 @@ function f(t = false) {
   typeof window > "u" || (window.CapacitorUtils = window.CapacitorUtils || {}, window.Capacitor !== void 0 && !t ? s(window) : window.cordova !== void 0 && u(window));
 }
 const Geolocation = registerPlugin("Geolocation", {
-  web: () => __vitePreload(() => import("./web-CpBtsCtQ.js"), true ? [] : void 0, import.meta.url).then((m) => new m.GeolocationWeb())
+  web: () => __vitePreload(() => import("./web-CiWMdW-N.js"), true ? [] : void 0, import.meta.url).then((m) => new m.GeolocationWeb())
 });
 f();
 class GeolocationService {
@@ -1830,17 +1830,6 @@ class NoteItem extends HTMLElement {
           background: var(--ion-color-light);
         }
 
-        .location-badge {
-          background: var(--ion-color-light);
-          color: var(--ion-text-color);
-          padding: 0.25rem 0.5rem;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
         @media (max-width: 768px) {
           .note-header {
             flex-direction: column;
@@ -1907,7 +1896,7 @@ class NoteItem extends HTMLElement {
               <ion-icon name="time-outline"></ion-icon>
               <span class="created-date"></span>
             </div>
-            <div class="note-date" style="display: none;">
+            <div class="note-date" id="updated-container" style="display: none;">
               <ion-icon name="refresh-outline"></ion-icon>
               <span class="updated-date"></span>
             </div>
@@ -1947,18 +1936,16 @@ class NoteItem extends HTMLElement {
     const locationTextEl = this.shadowRoot.querySelector(".location-text");
     titleEl.textContent = this.note.title;
     contentEl.textContent = this.note.content;
-    if (this.note.content.length > 200) {
-      if (!contentEl.querySelector(".expand-btn")) {
-        const expandBtn = document.createElement("button");
-        expandBtn.className = "expand-btn";
-        expandBtn.textContent = "Ver mais";
-        expandBtn.addEventListener("click", () => this.toggleContent());
-        contentEl.parentNode.insertBefore(expandBtn, contentEl.nextSibling);
-      }
+    if (this.note.content.length > 200 && !this.shadowRoot.querySelector(".expand-btn")) {
+      const expandBtn = document.createElement("button");
+      expandBtn.className = "expand-btn";
+      expandBtn.textContent = "Ver mais";
+      expandBtn.addEventListener("click", () => this.toggleContent());
+      contentEl.parentNode.insertBefore(expandBtn, contentEl.nextSibling);
     }
     createdDateEl.textContent = this.formatDate(this.note.createdAt);
     if (this.note.updatedAt && this.note.updatedAt !== this.note.createdAt) {
-      const updatedDateContainer = this.shadowRoot.querySelector(".note-date:nth-child(2)");
+      const updatedDateContainer = this.shadowRoot.getElementById("updated-container");
       updatedDateContainer.style.display = "flex";
       updatedDateEl.textContent = this.formatDate(this.note.updatedAt);
     }
@@ -2021,9 +2008,6 @@ class NoteItem extends HTMLElement {
       ];
       document.body.appendChild(alert);
       alert.present();
-      setTimeout(() => {
-        document.body.removeChild(alert);
-      }, 100);
     });
   }
   showLocationDetails() {
@@ -2041,9 +2025,6 @@ class NoteItem extends HTMLElement {
     alert.buttons = ["OK"];
     document.body.appendChild(alert);
     alert.present();
-    setTimeout(() => {
-      document.body.removeChild(alert);
-    }, 100);
   }
   getLocationSource(source) {
     const sources = {
@@ -2078,14 +2059,11 @@ class NoteItem extends HTMLElement {
     toast.color = color;
     document.body.appendChild(toast);
     toast.present();
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 2500);
   }
 }
 customElements.define("note-item", NoteItem);
 const SplashScreen = registerPlugin("SplashScreen", {
-  web: () => __vitePreload(() => import("./web-Cos1nN9e.js"), true ? [] : void 0, import.meta.url).then((m) => new m.SplashScreenWeb())
+  web: () => __vitePreload(() => import("./web-CmAdyrSH.js"), true ? [] : void 0, import.meta.url).then((m) => new m.SplashScreenWeb())
 });
 class NotesApp {
   constructor() {
